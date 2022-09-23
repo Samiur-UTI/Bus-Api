@@ -1,23 +1,29 @@
-const {Router} = require('express')
+const { Router } = require("express");
+const {
+  createRoute,
+  createBus,
+  uploadBus,
+  busBookingHistory,
+  updateBusBooking,
+} = require("../controller/index");
 
-const adminRoute = Router()
+const adminRoute = Router();
 
-const admin = '/admin'
+const admin = "/admin";
 
-adminRoute.post(`${admin}/sign-up`,console.log("SIGN UP ROUTE"))
+adminRoute.post(`${admin}/sign-up`);
 
-adminRoute.post(`${admin}/login`,console.log("LOGIN ROUTE"))
-
+adminRoute.post(`${admin}/login`);
 
 //PROTECTED ROUTES
-adminRoute.post(`${admin}/create-route`,console.log("CREATE ROUTE --- ROUTE"))
+adminRoute.post(`${admin}/create-route`, createRoute);
 
-adminRoute.post(`${admin}/create-bus`,console.log("CREATE BUS --- ROUTE"))
+adminRoute.post(`${admin}/create-bus`, createBus);
 
-adminRoute.post(`${admin}/upload-bus-pic`,console.log("UPLOAD BUS PIC --- ROUTE"))
+adminRoute.post(`${admin}/upload-bus-pic`, uploadBus);
 
-adminRoute.get(`${admin}/bus-booking-history`,console.log("BUS BOOKING HISTORY --- ROUTE"))
+adminRoute.get(`${admin}/bus-booking-history`, busBookingHistory);
 
-adminRoute.patch(`${admin}/update-booking`,console.log("BUS BOOKING UPDATE --------- ROUTE"))
+adminRoute.patch(`${admin}/update-booking`, updateBusBooking);
 
-module.export = adminRoute
+module.export = adminRoute;
