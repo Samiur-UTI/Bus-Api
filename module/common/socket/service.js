@@ -1,3 +1,4 @@
+const db = require("../../model/index")
 class WebSockets {
     users = [];
     connection(client) {

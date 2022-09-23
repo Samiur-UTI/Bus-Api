@@ -5,6 +5,7 @@ const adminRoute = require('./module/admin/routes/index.js')
 const http = require('http');
 const WebSockets = require("./module/common/socket/service")
 require("dotenv").config();
+const jwt = require("jsonwebtoken")
 const port  = process.env.PORT || 5000
 const app = express();
 
@@ -23,8 +24,69 @@ app.use('*', (req, res) => {
 
 const server = http.createServer(app);
 /** Create socket connection */
-global.io = require("socket.io")(server)
-global.io.on('connection', WebSockets.connection)
+const io = require("socket.io")(server)
+io.use((socket, next) => {
+  let token = socket.handshake.query.token;
+  jwt.verify(token, appSeckertKey, (err, decoded) => {
+      if (err) {
+          console.log(err);
+          return next(new Error('authentication error'));
+      }
+
+      socket.decodedtoken = decoded;
+      return next();
+  });
+});
+io.of('/chat').on('connection', function(socket) {
+  console.log('a user connected');
+  console.log(socket.id);
+
+  jwt.verify(socket.handshake.query.token, appSeckertKey, (err, decoded) => {
+      let decodedToken = decoded;
+
+      model.users.update({'isActive': 1, 'socketID': socket.id}, {where: {'id': decodedToken.user_id}})
+          .then(user => {
+              console.log('user is online');
+              socket.broadcast.emit('online User', decodedToken.user_id);
+          });
+
+      socket.on('disconnect', function (data) {
+          model.users.update({'isActive': 0, 'socketID': null}, {where: {'id': decodedToken.user_id}}).then(user => {
+              console.log('user is offline');
+              socket.broadcast.emit('disconnected User', decodedToken.user_id);
+          });
+          console.log('user disconnected');
+          socket.emit('disconnected');
+      });
+
+      socket.on('message', function (msg) {
+          console.log('new message');
+          model.users.findOne({where: {'id': decodedToken.user_id}}).then(user => {
+              socket.to(msg.conversation_id).emit('new message',
+                  {
+                      message_body: msg.message_body, user: {avatarPath: user.avatarPath, first_name: user.first_name},
+                      created_at: msg.created_at
+              });
+              socket.emit(msg.conversation_id,message);
+          });
+
+          model.users.findOne({where: {'id': msg.receiver_id}}).then(user => {
+              socket.to(user.socketID).emit('notify', {
+                  message_body: msg.message_body, sender_id: decodedToken.user_id,
+                  created_at: msg.created_at
+              });
+          });
+      });
+
+
+      socket.on('join room', function (roomname) {
+          console.log('joined room ' + roomname);
+          socket.join(roomname);
+      });
+
+
+  });
+});
 /** Listen on provided port, on all network interfaces. */
 server.listen(port);
 /** Event listener for HTTP server "listening" event. */
