@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt")
 const db = require("../../model/index")
-
+const jwt = require("jsonwebtoken")
 async function registerService(req,res,next){
     const {email,password} = req.body
     const isRegistered = await db.user.findOne({
@@ -35,6 +35,11 @@ async function registerService(req,res,next){
                 success:true,
                 message:"Successfully signed Up"
             })
+        }else{
+            res.status(400).json({
+                success: false,
+                message:"Invalid email address or short password"
+            })
         }
     }else{
         res.status(400).json({
@@ -44,8 +49,30 @@ async function registerService(req,res,next){
     }
 }
 async function loginService(req,res,next){
-    console.log(req.body)
-    
+    const {email,password} = req.body
+    const data = await db.user.findOne({
+        where:{
+            email
+        },
+        attributes:['email','password'],
+        raw:true
+    })
+    if(!data){
+        return res.status(400).json({
+            success: false,
+            message:"User not Registered"
+        })
+    }
+    const isValid = await bcrypt.compare(password,data.password)
+    if(isValid){
+       return res.status(400).json({
+        success: true,
+        token:jwt.sign(data,process.env.JWT_SECRET,{
+            expiresIn:"30m"
+        }),
+        message:"Token will expire in 30 minutes"
+       })
+    }
 }
 async function createRouteService(req,res,next){
     console.log(req.body)

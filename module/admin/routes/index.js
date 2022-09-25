@@ -8,25 +8,25 @@ const {
   busBookingHistory,
   updateBusBooking,
 } = require("../controller/index");
+const {authorizeAdmin} = require("../../middleware/auth")
 
 
 const adminRoute = Router();
 
-const admin = "/admin";
 
 adminRoute.post(`/sign-up`,register);
 
-adminRoute.post(`/login`);
+adminRoute.post(`/login`,login);
 
 //PROTECTED ROUTES
-adminRoute.post(`/create-route`, createRoute);
+adminRoute.post(`/create-route`,authorizeAdmin, createRoute);
 
-adminRoute.post(`/create-bus`, createBus);
+adminRoute.post(`/create-bus`,authorizeAdmin, createBus);
 
-adminRoute.post(`/upload-bus-pic`, uploadBus);
+adminRoute.post(`/upload-bus-pic`,authorizeAdmin, uploadBus);
 
-adminRoute.get(`/bus-booking-history`, busBookingHistory);
+adminRoute.get(`/bus-booking-history`,authorizeAdmin, busBookingHistory);
 
-adminRoute.patch(`/update-booking`, updateBusBooking);
+adminRoute.patch(`/update-booking`,authorizeAdmin, updateBusBooking);
 
 module.exports = adminRoute;
