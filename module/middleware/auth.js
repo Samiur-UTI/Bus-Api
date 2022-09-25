@@ -26,23 +26,29 @@ async function authorizeAdmin(req, res, next) {
 
 async function authorizeCustomer(req, res, next){
     try {
-        const token = req.headers.authorization.split(" ")[1];
-        const valid = await jwt.verify(token, process.env.JWT_SECRET);
-        const role = await db.user.findOne({
-            where:{
-                email:valid.email
-            },
-            attributes:["role"],
-            raw:true
-        })
-        if(role.role === "CUSTOMER"){
-            next();
-        }else{
-            res.status(204).json({
-                success:false,
-                message:"Unauthorized Access request"
+        if(req.headers.authorization){
+            const token = req.headers.authorization.split(" ")[1];
+            const valid = await jwt.verify(token, process.env.JWT_SECRET);
+            const role = await db.user.findOne({
+                where:{
+                    email:valid.email
+                },
+                attributes:["role"],
+                raw:true
             })
+            if(role.role === "CUSTOMER"){
+                next();
+            }else{
+                res.status(204).json({
+                    success:false,
+                    message:"Unauthorized Access request"
+                })
+            }
         }
+        res.status(204).json({
+            success:false,
+            message:"Unauthorized access"
+        })
       } catch (error) {
         throw new Error(error)
       }
