@@ -1,5 +1,7 @@
 const { Router } = require("express");
 const {
+  register,
+  login,
   createRoute,
   createBus,
   uploadBus,
@@ -7,23 +9,24 @@ const {
   updateBusBooking,
 } = require("../controller/index");
 
+
 const adminRoute = Router();
 
 const admin = "/admin";
 
-adminRoute.post(`${admin}/sign-up`);
+adminRoute.post(`/sign-up`,register);
 
-adminRoute.post(`${admin}/login`);
+adminRoute.post(`/login`);
 
 //PROTECTED ROUTES
-adminRoute.post(`${admin}/create-route`, createRoute);
+adminRoute.post(`/create-route`, createRoute);
 
-adminRoute.post(`${admin}/create-bus`, createBus);
+adminRoute.post(`/create-bus`, createBus);
 
-adminRoute.post(`${admin}/upload-bus-pic`, uploadBus);
+adminRoute.post(`/upload-bus-pic`, uploadBus);
 
-adminRoute.get(`${admin}/bus-booking-history`, busBookingHistory);
+adminRoute.get(`/bus-booking-history`, busBookingHistory);
 
-adminRoute.patch(`${admin}/update-booking`, updateBusBooking);
+adminRoute.patch(`/update-booking`, updateBusBooking);
 
-module.export = adminRoute;
+module.exports = adminRoute;

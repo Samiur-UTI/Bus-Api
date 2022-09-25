@@ -1,6 +1,6 @@
 "use strict";
 module.exports = function(sequelize, DataTypes) {
-  const users = sequelize.define("users", {
+  return sequelize.define("user", {
     id: {
       type: DataTypes.INTEGER.UNSIGNED ,
         primaryKey: true ,
@@ -15,6 +15,19 @@ module.exports = function(sequelize, DataTypes) {
         type:DataTypes.STRING,
         allowNull: false,
     },
+    role:{
+      type:DataTypes.ENUM({
+        values:["CUSTOMER","ADMIN"]
+      }),
+    },
+    customer_id:{
+      type:DataTypes.INTEGER,
+      allowNull: true,
+    },
+    admin_id:{
+      type:DataTypes.INTEGER,
+      allowNull: true,
+    },
     created_at :{
       type: 'TIMESTAMP' ,
       allowNull: false,
@@ -25,7 +38,11 @@ module.exports = function(sequelize, DataTypes) {
       allowNull: false,
       defaultValue: DataTypes.NOW
     },
-    isActive: DataTypes.BOOLEAN,
+    isActive:{
+      type:DataTypes.ENUM({
+        values:["TRUE","FALSE"]
+      })
+    },
     socketID: {
         type:DataTypes.STRING(255),
         defaultValue:null,
@@ -36,7 +53,7 @@ module.exports = function(sequelize, DataTypes) {
   {
     timestamps: false,
     freezeTableName:true,
-    tableName: 'users'
+    tableName: 'user'
   }
   , {
     classMethods: {
@@ -44,13 +61,4 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
-    users.associate = function(models) {
-        users.hasMany(models.messages, {
-            onDelete: "CASCADE",
-            foreignKey:'sender_id',
-            targetKey: 'id',
-            as: 'userMessages'
-        });
-    };
-  return users;
 };

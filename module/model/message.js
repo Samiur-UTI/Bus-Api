@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  const messages = sequelize.define("messages", {
+  return sequelize.define("messages", {
     id: {
         type: DataTypes.INTEGER.UNSIGNED ,
         primaryKey: true ,
@@ -53,13 +53,4 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
-    messages.associate = function(models) {
-        messages.belongsTo(models.users, {
-            onDelete: "CASCADE",
-            foreignKey:  'sender_id',
-            targetKey: 'id',
-            as :'user'
-        });
-    };
-  return messages;
 };

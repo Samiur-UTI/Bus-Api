@@ -2,7 +2,7 @@
 
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define(
-    "bus",
+    "bus_route_search",
     {
       id: {
         type: DataTypes.INTEGER,
@@ -12,30 +12,32 @@ module.exports = function (sequelize, DataTypes) {
           notEmpty: true,
         },
       },
-      company_name: {
-        type: DataTypes.STRING,
+      bus_id: {
+        type: DataTypes.INTEGER,
         validate:{
             notEmpty: true
         }
       },
-      license_number: {
-        type: DataTypes.STRING,
+      dep: {
+        type: DataTypes.DATE,
         validate:{
-          notEmpty: true
-      }
-      },
-      seats_available:{
-        type:DataTypes.INTEGER,
-        validate:{
-          notEmpty:true
+            notEmpty: true
         }
       },
-      image:{
-        type:DataTypes.STRING,
+      arr: {
+        type: DataTypes.DATE,
+        validate:{
+            notEmpty: true
+        }
+      },
+      trip_status:{
+        type:DataTypes.ENUM({
+            values:["OFF","ON"]
+        }),
       }
     },
     {
-      tableName: "bus",
+      tableName: "bus_route_search",
       freezeTableName: true,
       timestamps: false,
       underscored: true,
