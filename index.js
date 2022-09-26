@@ -25,33 +25,33 @@ const server = http.createServer(app);
 /** Create socket connection */
 const io = require("socket.io")(server);
 io.use((socket, next) => {
-  let token = socket.handshake.query.token;
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      console.log(err);
-      return next(new Error("authentication error"));
-    }
-
-    socket.decodedtoken = decoded;
-    return next();
-  });
+  
 });
 io.of("/chat").on("connection", function (socket) {
   console.log("a user connected");
   console.log(socket.id);
-  
+  let token = socket.handshake.query.token;
+  console.log(token)
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return new Error("authentication error")
+    }
+    socket.decodedtoken = decoded;
+    console.log("ASE",socket.decodedtoken )
+  });
   jwt.verify(
-    socket.handshake.query.token,
+    socket.handshake.token,
     process.env.JWT_SECRET,
     (err, decoded) => {
-      let decodedToken = decoded;
+      let decodedToken = socket.decodedtoken;
       if (!decodedToken) {
         io.close();
       } else {
-        db.users
+        db.user
           .update(
-            { isActive: 1, socketID: socket.id },
-            { where: { id: decodedToken.user_id } }
+            { isActive: "TRUE", socketID: socket.id },
+            { where: { id: decodedToken.id } }
           )
           .then((user) => {
             console.log("user is online");
@@ -59,10 +59,10 @@ io.of("/chat").on("connection", function (socket) {
           });
       }
       socket.on("disconnect", function (data) {
-        db.users
+        db.user
           .update(
-            { isActive: 0, socketID: null },
-            { where: { id: decodedToken.user_id } }
+            { isActive: "FALSE", socketID: null },
+            { where: { id: decodedToken.id } }
           )
           .then((user) => {
             console.log("user is offline");

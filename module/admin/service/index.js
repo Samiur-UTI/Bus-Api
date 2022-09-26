@@ -268,14 +268,14 @@ async function updateBusBookingService(req, res, next) {
       }
     );
     return res.status(200).json({
-        success: true,
-        message:"Successfully Updated booking status"
-    })
+      success: true,
+      message: "Successfully Updated booking status",
+    });
   }
   return res.status(400).json({
     success: false,
-    message:"Couldn't update booking,try later"
-})
+    message: "Couldn't update booking,try later",
+  });
 }
 
 module.exports = {
