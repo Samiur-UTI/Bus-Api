@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function (sequelize, DataTypes) {
-  return sequelize.define(
+  const route= sequelize.define(
     "route",
     {
       id: {
@@ -36,6 +36,20 @@ module.exports = function (sequelize, DataTypes) {
       freezeTableName: true,
       timestamps: false,
       underscored: true,
+    },
+    {
+      classMethods: {
+        associate: function(models) {
+        }
+      }
     }
   );
+  route.associate = function(models){
+    route.hasOne(models.bus_route_search, {
+      onDelete: "RESTRICT",
+      foreignKey:  'route_id',
+      targetKey: 'id',
+  });
+  }
+  return route
 };

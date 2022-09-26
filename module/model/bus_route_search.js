@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function (sequelize, DataTypes) {
-  return sequelize.define(
+  const bus_route_search =  sequelize.define(
     "bus_route_search",
     {
       id: {
@@ -16,6 +16,12 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         validate:{
             notEmpty: true
+        }
+      },
+      price:{
+        type: DataTypes.FLOAT,
+        validate:{
+            notEmpty: false
         }
       },
       dep: {
@@ -34,6 +40,7 @@ module.exports = function (sequelize, DataTypes) {
         type:DataTypes.ENUM({
             values:["OFF","ON"]
         }),
+        defaultValue:"ON"
       }
     },
     {
@@ -41,6 +48,27 @@ module.exports = function (sequelize, DataTypes) {
       freezeTableName: true,
       timestamps: false,
       underscored: true,
+    },
+    {
+      classMethods: {
+        associate: function(models) {
+        }
+      }
     }
   );
+  bus_route_search.associate = function(models){
+    bus_route_search.belongsTo(models.bus,{
+      onDelete: "RESTRICT",
+      foreignKey:  'bus_id',
+      targetKey: 'id',
+    })
+  }
+  bus_route_search.associate = function(models){
+    bus_route_search.belongsTo(models.route,{
+      onDelete: "RESTRICT",
+      foreignKey:  'route_id',
+      targetKey: 'id',
+    })
+  }
+  return bus_route_search
 };

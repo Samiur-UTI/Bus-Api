@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const adminRoute = require("./module/admin/routes/index.js");
+const customerRoute = require("./module/customer/routes/index")
 const http = require("http");
 const WebSockets = require("./module/common/socket/service");
 require("dotenv").config();
@@ -18,7 +19,7 @@ app.use(
 app.use(cors());
 
 app.use("/admin",adminRoute)
-
+app.use("/customer",customerRoute)
 
 const server = http.createServer(app);
 /** Create socket connection */

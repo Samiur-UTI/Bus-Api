@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const db = require("../../model/index");
 const jwt = require("jsonwebtoken");
+const { raw } = require("body-parser");
+const { request } = require("express");
 
 async function registerService(req, res, next) {
   const { email, password } = req.body;
@@ -100,51 +102,180 @@ async function createRouteService(req, res, next) {
         message: "Failed to add route",
       });
     }
-  }else{
+  } else {
     res.status(400).json({
-        success: false,
-        message:"Pleas check your given inputs"
-    })
+      success: false,
+      message: "Pleas check your given inputs",
+    });
   }
 }
 async function createBusService(req, res, next) {
-  if(req.body.hasOwnProperty("company_name") && req.body.hasOwnProperty("license_number") && req.body.hasOwnProperty("seats_available")){
-    const response = await db.bus.create(req.body)
-    if(!response){
-        return res.status(400).json({
-            success:false,
-            message:"Failed to create bus data"
-        })
+  if (
+    req.body.hasOwnProperty("company_name") &&
+    req.body.hasOwnProperty("license_number") &&
+    req.body.hasOwnProperty("seats_available")
+  ) {
+    const response = await db.bus.create(req.body);
+    if (!response) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to create bus data",
+      });
     }
     return res.status(200).json({
-        success:true,
-        message:"Bus info created successfully"
-    })
+      success: true,
+      message: "Bus info created successfully",
+    });
   }
+  return res.status(400).json({
+    success: true,
+    message: "Please check your given parameters",
+  });
+}
+async function createBusTripService(req, res, next) {
+  if (
+    req.body.hasOwnProperty("dep") &&
+    req.body.hasOwnProperty("arr") &&
+    req.body.hasOwnProperty("from") &&
+    req.body.hasOwnProperty("to") &&
+    req.body.hasOwnProperty("license_number") &&
+    req.body.hasOwnProperty("price")
+  ) {
+    const routeCheck = await db.route.findOne({
+      where: {
+        from: req.body.from,
+        to: req.body.to,
+        status: "ACTIVE",
+      },
+      attributes: ["id"],
+      raw: true,
+    });
+    if (routeCheck) {
+      const busCheck = await db.bus.findOne({
+        where: {
+          license_number: req.body.license_number,
+        },
+        attributes: ["id"],
+        raw: true,
+      });
+      if (busCheck) {
+        const item = {};
+        item["route_id"] = routeCheck.id;
+        item["bus_id"] = busCheck.id;
+        item["dep"] = Date.now();
+        item["arr"] = Date.now();
+        item["price"] = req.body.price;
+        await db.bus_route_search.create(item);
+        return res.status(200).json({
+          success: true,
+          message: "Successfully created trips!",
+        });
+      }
+    }
+  }
+  return res.status(400).json({
+    success: true,
+    message: "Please check your given parameters",
+  });
 }
 async function uploadBusService(req, res, next) {
   const path = req.file.path;
-  const id = req.query.id
-  const response = await db.bus.update({image:path},{
-    where:{
-        id:id
-    },
-    raw:true
-  })
-  if(response){
+  const id = req.query.id;
+  const response = await db.bus.update(
+    { image: path },
+    {
+      where: {
+        id: id,
+      },
+      raw: true,
+    }
+  );
+  if (response) {
     return res.status(200).json({
-        success:true,
-        message:"Successfully uploaded bus pic"
+      success: true,
+      message: "Successfully uploaded bcreateBusTripService",
+    });
+  }
+  return res.status(400).json({
+    success: false,
+    message: "Failed to upload bus pic",
+  });
+}
+async function busBookingHistoryService(req, res, next) {
+  const data = await db.bus_booking_history.findAll({
+    where: {
+      status: "BOOKED",
+    },
+    raw: true,
+  });
+  if (data.length) {
+    return res.status(200).json({
+      success: true,
+      data: data,
+    });
+  }
+  return res.status(400).json({
+    success: false,
+    message: "No active trip found, bad business :(",
+  });
+}
+async function updateBusBookingService(req, res, next) {
+  const response = await db.bus_booking_history.update(
+    {
+      status: req.body.status,
+      amount_paid: req.body.amount_paid,
+      amount_due: req.body.amount_due,
+    },
+    {
+      where: {
+        id: req.query.booking_id,
+      },
+      raw: true,
+    }
+  );
+  if (response[0]) {
+    const brsId = await db.bus_booking_history.findOne({
+      where: {
+        id: response[0],
+      },
+      attributes: ["bus_route_search_id", "seats"],
+      raw: true,
+    });
+    const busId = await db.bus_route_search.findOne({
+      where: {
+        id: brsId.bus_route_search_id,
+      },
+      attributes: ["bus_id"],
+      raw: true,
+    });
+    const oldSeats = await db.bus.findOne({
+      where: {
+        id: busId.bus_id,
+      },
+      attributes: ["seats_available"],
+      raw: true,
+    });
+    const currentSeats = oldSeats.seats_available - brsId.seats;
+    await db.bus.update(
+      {
+        seats_available: currentSeats,
+      },
+      {
+        where: {
+          id: busId.bus_id,
+        },
+        raw: true,
+      }
+    );
+    return res.status(200).json({
+        success: true,
+        message:"Successfully Updated booking status"
     })
   }
   return res.status(400).json({
-    success:false,
-    message:"Failed to upload bus pic"
+    success: false,
+    message:"Couldn't update booking,try later"
 })
-}
-async function busBookingHistoryService(req, res, next) {}
-async function updateBusBookingService(req, res, next) {
-  console.log(req.body);
 }
 
 module.exports = {
@@ -152,6 +283,7 @@ module.exports = {
   loginService,
   createRouteService,
   createBusService,
+  createBusTripService,
   uploadBusService,
   busBookingHistoryService,
   updateBusBookingService,

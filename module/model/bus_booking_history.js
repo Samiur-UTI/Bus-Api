@@ -12,7 +12,7 @@ module.exports = function (sequelize, DataTypes) {
           notEmpty: true,
         },
       },
-      customer_id: {
+      booking_id: {
         type: DataTypes.INTEGER,
         validate:{
             notEmpty: true
@@ -40,6 +40,13 @@ module.exports = function (sequelize, DataTypes) {
         validate:{
             notEmpty: true
         }
+      },
+      seats:{
+        type:DataTypes.INTEGER,
+        validate:{
+            notEmpty: true
+        },
+        defaultValue:1
       },
       created_at :{
         type: 'TIMESTAMP' ,

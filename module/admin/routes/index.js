@@ -4,6 +4,7 @@ const {
   login,
   createRoute,
   createBus,
+  createBusTrip,
   uploadBus,
   busBookingHistory,
   updateBusBooking,
@@ -48,6 +49,9 @@ adminRoute.post(`/create-route`,authorizeAdmin, createRoute);
 adminRoute.post(`/create-bus`,authorizeAdmin, createBus);
 
 adminRoute.post(`/upload-bus-pic`,authorizeAdmin,upload.single("file"), uploadBus);
+
+adminRoute.post(`/create-bus-trip`,authorizeAdmin, createBusTrip);
+
 
 adminRoute.get(`/bus-booking-history`,authorizeAdmin, busBookingHistory);
 
