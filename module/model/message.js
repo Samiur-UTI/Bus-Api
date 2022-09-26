@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function(sequelize, DataTypes) {
-  return sequelize.define("messages", {
+  return sequelize.define("message", {
     id: {
         type: DataTypes.INTEGER.UNSIGNED ,
         primaryKey: true ,
@@ -46,7 +46,7 @@ module.exports = function(sequelize, DataTypes) {
   {
     timestamps: false,
     freezeTableName:true,
-      tableName: 'messages'
+      tableName: 'message'
   }, {
     classMethods: {
       associate: function(models) {
